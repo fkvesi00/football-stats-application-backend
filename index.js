@@ -183,113 +183,120 @@ app.post('/playerGoals', (req,res) => {
   .catch(err => console.log(err))
 })
 
+app.post('/addClub', async (req, res) => {
+  const { clubID, teamName } = req.body;
+  console.log(typeof clubID, typeof teamName)
+  // Check if the parameters are of the proper type
+  if (typeof clubID !== 'number' || typeof teamName !== 'string') {
+    return res.status(400).json({ error: 'Invalid data types' });
+  }
+
+  // Create a new club record in the database
+  try {
+    const tableName = 'team'
+    const teamData = {
+      teamid: clubID, // Replace with your teamID
+      teamname: teamName, // Replace with your teamname
+    };
+
+    postgres(tableName).insert(teamData).then(() => console.log('Data inserted successfully'))
+    .finally(() => {
+      postgres.destroy(); // Close the database connection when done
+    });
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to save to the database' });
+  }
+});
+
+
+app.post('/addPlayer', async (req, res) => {
+  const { playerID, playerName, playerBirth, playerNationality } = req.body;
+  
+
+  console.log(typeof playerID, typeof playerName, typeof playerBirth, typeof playerNationality )
+   // Check if the parameters are of the proper type
+  if (typeof playerID !== 'number' || typeof playerName !== 'string' || typeof playerBirth !== 'string' || typeof playerNationality !== 'string') {
+    return res.status(400).json({ error: 'Invalid data types' });
+  }
+
+  // Create a new club record in the database
+  try {
+    const tableName = 'player'
+    const teamData = {
+      playerid: playerID, 
+      playername: playerName, 
+      playerbirth: playerBirth, 
+      playernationality: playerNationality
+    };
+
+    postgres(tableName).insert(teamData).then(() => console.log('Data inserted successfully'))
+    .finally(() => {
+      postgres.destroy(); // Close the database connection when done
+    });
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to save to the database' });
+  }
+});
+
+
+app.post('/addMatch', async (req, res) => {
+  const {MatchID, Date, Time, Home, Score, Away} = req.body;
+    console.log(MatchID,Date,Time,Home,Score,Away)
+
+    const matchData = {
+      matchid:parseInt(MatchID, 10),
+      date: Date,
+      time: Time,
+      score: null,
+      seasonid: 1
+    };
+    console.log(typeof Date, typeof Time)
+
+    const homeTeamData = {
+      TeamName: parseInt(Home, 10), // Replace with actual team name
+    };
+    
+    const awayTeamData = {
+      TeamName: parseInt(Away, 10), // Replace with actual team name
+    };
+
+    postgres.transaction(async (trx) => {
+      try {
+        // Insert data into the "Match" relation
+        const matchId = await trx('match').insert(matchData);
+        console.log('This part success')
+        // Insert data into the "teamplayingmatch" relation for the "Home" team
+       await trx('teamplayingmatch').insert({
+        matchid: matchData.matchid,
+        teamid: homeTeamData.TeamName, // Insert the "Home" team ID (if you have it)
+        home: true,
+      });
+
+      // Insert data into the "teamplayingmatch" relation for the "Away" team
+      await trx('teamplayingmatch').insert({
+        matchid: matchData.matchid,
+        teamid: awayTeamData.TeamName, // Insert the "Away" team ID (if you have it)
+        home: false,
+      });
+    
+        // Commit the transaction
+        await trx.commit();
+    
+        console.log('Transaction successful');
+      } catch (error) {
+        // Rollback the transaction in case of an error
+        await trx.rollback();
+        console.error('Transaction failed:', error);
+      }
+    });
+
+})
+
 app.listen(port, ()=>{
   console.log(`Sluša na ${port}`);
 }) 
 
-/* 
-app.post('/raspored', (req,res) => {
-  const {id} = req.body;
-  const kopijaRasporeda = JSON.parse(JSON.stringify(raspored));
-  //funkcija koja pronalazi imena timova po id-u
-  const rasporedSaImenima = (rez) => rez.map(raspored2 =>{
-    for(let i=0;i<=clubs.length;i++){
-      if(raspored2.home_team_ID === clubs[i].team_id){
-          raspored2.home_team_ID = clubs[i].team_name
-          break;
-        }
-      }  
-    for(let j=0;j<=clubs.length;j++){
-      if(raspored2.away_team_ID === clubs[j].team_id){
-        raspored2.away_team_ID = clubs[j].team_name
-        break;
-      }
-    }
-    return raspored2;
-  })
-  if(!id){
-    const rez = rasporedSaImenima(kopijaRasporeda)
-    res.json(rez)
-
-  }else{
-    //ako je id true, to znaci, pronadi samo utakmice tog tima, sto sljdeca funkcija radi
-    const rasporediTima = kopijaRasporeda.filter(raspored => {
-     return (raspored.home_team_ID  === id)  || (raspored.away_team_ID === id)
-    })
-     
-    const rez2 = rasporedSaImenima(rasporediTima)
-    res.json(rez2)
-  }
-  
-})
-
-app.get('/utakmice', (req,res) =>{
-  const kopijaUtakmica = JSON.parse(JSON.stringify(utakmice));
-  const rasporedSaImenima = (rez) => rez.map(raspored2 =>{
-    for(let i=0;i<=clubs.length;i++){
-      if(raspored2.HomeTeamID === clubs[i].team_id){
-          raspored2.HomeTeamID = clubs[i].team_name
-          break;
-        }
-      }  
-    for(let j=0;j<=clubs.length;j++){
-      if(raspored2.AwayTeamID === clubs[j].team_id){
-        raspored2.AwayTeamID = clubs[j].team_name
-        break;
-      }
-    }
-    return raspored2;
-  })
-
-  const rez = rasporedSaImenima(kopijaUtakmica);
-  
-
-  res.json(rez);
-})
-
-app.post('/utakmice',(req,res) =>{
-  const {id} = req.body;
-  const kopijaUtakmica = JSON.parse(JSON.stringify(utakmice));
-  const rasporedSaImenima = (rez) => rez.map(raspored2 =>{
-    for(let i=0;i<=clubs.length;i++){
-      if(raspored2.HomeTeamID === clubs[i].team_id){
-          raspored2.HomeTeamID = clubs[i].team_name
-          break;
-        }
-      }  
-    for(let j=0;j<=clubs.length;j++){
-      if(raspored2.AwayTeamID === clubs[j].team_id){
-        raspored2.AwayTeamID = clubs[j].team_name
-        break;
-      }
-    }
-    return raspored2;
-  })
-  
-  
-  const utakmicaTima = kopijaUtakmica.filter(utakmica =>{
-    return (utakmica.HomeTeamID === id) || (utakmica.AwayTeamID === id)
-  })
-
-  const rez = rasporedSaImenima(utakmicaTima);
-  
-
-  res.json(rez);
-})
-
-app.get('/tablica', (req,res) =>{
-  const kopijaTablice = JSON.parse(JSON.stringify(tablica));
-  const rasporedSaImenima = (rez) => rez.map(raspored2 =>{
-    for(let i=0;i<=clubs.length;i++){
-      if(raspored2.TeamID === clubs[i].team_id){
-          raspored2.teamName = clubs[i].team_name
-          break;
-        }
-      }
-      return raspored2;  
-    })
-    const rez = rasporedSaImenima(kopijaTablice);
-
-  res.json(rez)
-})
-*/
