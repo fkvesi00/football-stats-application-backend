@@ -39,6 +39,7 @@ app.get('/players', (req,res) => {
 //pronadi sve klubove u sezoni
 app.post('/teamBySeason', (req,res) =>{
   const {seasonID} = req.body
+  
   postgres
   .distinct('team.teamname', 'team.teamid')
   .from('team')
@@ -49,6 +50,7 @@ app.post('/teamBySeason', (req,res) =>{
   )
   .then(data => res.json(data))
   .catch(err => console.log(err))
+  
 })
 
 //trazi sve igrace, koji su nastupili za neki klub(nebitno sezona)
@@ -294,6 +296,81 @@ app.post('/addMatch', async (req, res) => {
       }
     });
 
+})
+
+app.post('/addPlayerToClub', async (req,res) => {
+    const {playerid, teamid, seasonid} = req.body
+    
+    postgres.transaction((trx) => {
+      return trx
+        .insert({ playerid, teamid })
+        .into('playerteam')
+        .then(() => {
+          return trx
+            .insert({ playerid, teamid, seasonid })
+            .into('playerteamseason');
+        })
+        .then(trx.commit)
+        .catch(trx.rollback);
+    })
+      .then(() => {
+        console.log('Transaction complete. Data inserted successfully.');
+      })
+      .catch((err) => {
+        console.error('Error inserting data:', err);
+      })
+})
+
+app.get('/getMatches', async (req,res) => {
+  const seasonID= 1
+  postgres('teamplayingmatch')
+  .select('match.matchid', 'team.teamname', 'match.score', 'teamplayingmatch.home', 'match.date', 'match.time', 'team.teamid')
+  .join('match', 'teamplayingmatch.matchid', '=', 'match.matchid')
+  .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
+  .where('match.seasonid', seasonID) // Add the condition for seasonid
+  .where('match.score', null)  // Add the condition for score
+  .then(data => {
+    const formattedData = matchFormat(data);
+    res.json(formattedData);
+  })
+  .catch(err => {
+    console.log(err);
+    // Handle errors as needed
+  });
+
+  
+
+  const matchFormat = utakmica => {
+    const matches1 = [];
+  
+    utakmica.forEach((utakmica2, j) => {
+      for (let i = j + 1; i < utakmica.length; i++) {
+        if (utakmica2.matchid === utakmica[i].matchid) {
+          const homeTeam = utakmica2.home ? utakmica2 : utakmica[i];
+          const awayTeam = utakmica2.home ? utakmica[i] : utakmica2;
+  
+          const match = {
+            match_id: utakmica2.matchid,
+            date: utakmica2.date,
+            time: utakmica2.time,
+            h_team: homeTeam.teamname,
+            h_id: homeTeam.teamid,
+            score: utakmica2.score,
+            a_team: awayTeam.teamname,
+            a_id: awayTeam.teamid
+          };
+          
+          matches1.push(match);
+        }
+      }
+    });
+  
+    return matches1;
+  };
+    
+  
+
+ 
 })
 
 app.listen(port, ()=>{
