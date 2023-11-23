@@ -246,58 +246,57 @@ app.post('/addPlayer', async (req, res) => {
 
 
 app.post('/addMatch', async (req, res) => {
-  const {MatchID, Date, Time, Home, Score, Away} = req.body;
-    console.log(MatchID,Date,Time,Home,Score,Away)
+  const { MatchID, Date, Time, Home, Score, Away } = req.body;
+  console.log(MatchID, Date, Time, Home, Score, Away);
 
-    const matchData = {
-      matchid:parseInt(MatchID, 10),
-      date: Date,
-      time: Time,
-      score: null,
-      seasonid: 1
-    };
-    console.log(typeof Date, typeof Time)
+  const matchData = {
+    matchid: Number(MatchID),
+    date: Date,
+    time: Time,
+    score: null,
+    seasonid: 1,
+  };
+  console.log(typeof Date, typeof Time);
 
-    const homeTeamData = {
-      TeamName: parseInt(Home, 10), // Replace with actual team name
-    };
-    
-    const awayTeamData = {
-      TeamName: parseInt(Away, 10), // Replace with actual team name
-    };
+  const homeTeamData = {
+    TeamName: Number(Home), // Replace with actual team name
+  };
 
-    postgres.transaction(async (trx) => {
-      try {
-        // Insert data into the "Match" relation
-        const matchId = await trx('match').insert(matchData);
-        console.log('This part success')
-        // Insert data into the "teamplayingmatch" relation for the "Home" team
-       await trx('teamplayingmatch').insert({
-        matchid: matchData.matchid,
+  const awayTeamData = {
+    TeamName: Number(Away), // Replace with actual team name
+  };
+
+  postgres.transaction(async (trx) => {
+    try {
+      // Insert data into the "Match" relation
+      const [matchObject] = await trx('match').insert(matchData).returning('matchid');
+      const matchId = matchObject.matchid;
+
+      // Insert data into the "teamplayingmatch" relation for the "Home" team
+      await trx('teamplayingmatch').insert({
+        matchid: matchId,
         teamid: homeTeamData.TeamName, // Insert the "Home" team ID (if you have it)
         home: true,
       });
 
       // Insert data into the "teamplayingmatch" relation for the "Away" team
       await trx('teamplayingmatch').insert({
-        matchid: matchData.matchid,
+        matchid: matchId,
         teamid: awayTeamData.TeamName, // Insert the "Away" team ID (if you have it)
         home: false,
       });
-    
-        // Commit the transaction
-        await trx.commit();
-    
-        console.log('Transaction successful');
-      } catch (error) {
-        // Rollback the transaction in case of an error
-        await trx.rollback();
-        console.error('Transaction failed:', error);
-      }
-    });
 
-})
+      // Commit the transaction
+      await trx.commit();
 
+      console.log('Transaction successful');
+    } catch (error) {
+      // Rollback the transaction in case of an error
+      await trx.rollback();
+      console.error('Transaction failed:', error);
+    }
+  });
+});
 app.post('/addPlayerToClub', async (req,res) => {
     const {playerid, teamid, seasonid} = req.body
     
@@ -314,7 +313,7 @@ app.post('/addPlayerToClub', async (req,res) => {
         .catch(trx.rollback);
     })
       .then(() => {
-        console.log('Transaction complete. Data inserted successfully.');
+        console.log('Transaction complete. Data inserted successfully. Player is added to club');
       })
       .catch((err) => {
         console.error('Error inserting data:', err);
@@ -366,11 +365,53 @@ app.get('/getMatches', async (req,res) => {
     });
   
     return matches1;
-  };
-    
-  
+  }; 
+})
 
- 
+app.post('/addTeamMatchPlayer', async (req,res) => {
+  const {matchid, hometeamid, awayteamid, homePlayersIds, awayPlayersIds, homeScore, awayScore} = req.body
+
+  console.log(matchid,hometeamid,awayteamid,homePlayersIds,awayPlayersIds,homeScore,awayScore)
+  const score = `${homeScore}:${awayScore}`
+  
+  // Step 1: Update the `score` column in the `match` table
+  postgres('match')
+    .where('matchid',matchid)
+    .update({
+      score:score
+    })
+    .then(() => {
+      console.log('Score updated successfully');
+    })
+    .catch((error) => {
+      console.error('Error updating score:', error);
+    })
+  
+    // Step 2: Insert records into the `teamplayingmatch` table
+    const insertTeamPlayingMatch = async (matchid, clubid, playerid) => {
+      playerid=Number(playerid)
+      try {
+        await postgres('teammatchplayer').insert({
+          matchid,
+          playerid,
+          teamid:clubid,
+        });
+        console.log(`Record inserted successfully for matchid ${matchid}, clubid ${clubid}, playerid ${playerid}`);
+      } catch (error) {
+        console.error('Error inserting record:', error);
+      }
+    };
+    
+    // Insert records for home team players
+    for (const playerid of homePlayersIds) {
+      insertTeamPlayingMatch(matchid, hometeamid, playerid);
+    }
+    
+    // Insert records for away team players
+    for (const playerid of awayPlayersIds) {
+      insertTeamPlayingMatch(matchid, awayteamid, playerid);
+    }
+    
 })
 
 app.listen(port, ()=>{
