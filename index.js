@@ -11,6 +11,7 @@ app.use(express.json())
 const knex=require('knex');
 
 
+
 const postgres=knex({
   client: 'pg',
   connection: {
@@ -24,20 +25,33 @@ const postgres=knex({
 
 app.use(cors())
 
-//pronalazi sve klubove
-app.get('/clubs', function (req, res) {
-  postgres.select('*').from('team').then(data => res.json(data))
-  .catch(err => console.log(err));
-})
+const clubs = require('./controllers/clubs')
+const players = require('./controllers/players')
+const matches = require('./controllers/matches')
 
-//pronalazi sve igrace
-app.get('/players', (req,res) => {
-  postgres.select('*').from('player').then(data => res.json(data))
-  .catch(err => console.log(err));
-})
+//pronalazi sve klubove
+app.get('/clubs', (req,res) =>{clubs.getClubsList(req,res, postgres)})
 
 //pronadi sve klubove u sezoni
-app.post('/teamBySeason', (req,res) =>{
+app.post('/clubs/season', (req,res) => {clubs.getClubBySeason(req,res,postgres)})
+
+//trazi utakmice kluba
+app.post('/clubs/games', (req,res) => {clubs.getClubGames(req,res,postgres)})
+
+//pronalazi sve igrace
+app.get('/players', (req, res) => {players.getPlayersList(req,res,postgres)})
+
+//trazi igrace po klubu(nije ukljucena sezona)
+app.post('/players', (req,res) => {players.getPlayersOfClub(req,res,postgres)})
+
+//trazi sve utakmice lige u toj sezoni(treba ubacit i natjecanje, uzimamo u obzir i odigrane i utakmice koje se trebaju odigrati)
+app.post('/matches/allMatches', (req,res) => {matches.getMatchesBySeason(req,res,postgres)})
+
+//trazi match po matchID
+app.post('/matches/matchid', (req,res) => {matches.findMatchById(req,res,postgres)})
+
+
+/* app.post('/teamBySeason', (req,res) =>{
   const {seasonID} = req.body
   
   postgres
@@ -51,9 +65,9 @@ app.post('/teamBySeason', (req,res) =>{
   .then(data => res.json(data))
   .catch(err => console.log(err))
   
-})
+}) */
 
-//trazi sve igrace, koji su nastupili za neki klub(nebitno sezona)
+/* //trazi sve igrace, koji su nastupili za neki klub(nebitno sezona)
 app.get('/playerTeam', (req,res) => {
   postgres('player')
   .select('player.playername', 'team.teamname')
@@ -61,19 +75,10 @@ app.get('/playerTeam', (req,res) => {
   .join('team', 'team.teamid', '=', 'playerteam.teamid')
   .then(data => res.json(data))
   .catch(err => console.log(err));
-})
+}) */
 
-//trazi igrace po klubu(nije ukljucena sezona)
-app.post('/players', (req,res)=>{
-  const {teamID} = req.body
-  postgres('player')
-  .select('*')
-  .join('playerteam', 'player.playerid', '=', 'playerteam.playerid')
-  .where('playerteam.teamid', teamID)
-  .then(data => res.json(data))
-  .catch(err => console.log(err));
-})
-
+ 
+/* 
 //trazi sve utakmice pojedinog kluba
 app.post('/clubGames', (req,res) => {
   const {teamID} = req.body;
@@ -86,10 +91,10 @@ app.post('/clubGames', (req,res) => {
   })
   .then(data => res.json(data))
   .catch(err => console.log(err));
-})
+}) */
 
 //trazi sve utakmice lige u toj sezoni(treba ubacit i natjecanje, uzimamo u obzir i odigrane i utakmice koje se trebaju odigrati)
-app.post('/matchesBySeason', (req,res) => {
+/* app.post('/matchesBySeason', (req,res) => {
   const {seasonID} = req.body;
   postgres('teamplayingmatch')
   .select('match.matchid', 'team.teamname', 'match.score', 'teamplayingmatch.home', 'match.date', 'match.time', 'team.teamid')
@@ -97,10 +102,11 @@ app.post('/matchesBySeason', (req,res) => {
   .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
   /* .whereIn('seasonid', function() {
     this.select('seasonid').from('match').where('seasonid', seasonID);
-  }) */
+  }) 
   .then(data => res.json(data))
   .catch(err=> console.log(err));
-})
+}) 
+*/
 
 //pronalazi sve igrace koji su nastupili u pojedinoj utakmici                                            (nismo dodali sezonu a mozda i ne moramo vidi cemo)
 app.post('/teamMatchPlayer', (req, res) => {
@@ -123,7 +129,7 @@ app.post('/scorers', (req, res) => {
 })
 
 //trazi match po mathID
-app.post('/specificMatch', (req, res) => {
+/* app.post('/specificMatch', (req, res) => {
   const {matchID} = req.body;
   postgres('teamplayingmatch')
       .select('match.matchid', 'team.teamid', 'teamname', 'logo', 'date', 'time', 'score', 'home')
@@ -133,7 +139,7 @@ app.post('/specificMatch', (req, res) => {
       .then(data => res.json(data))
       .catch(err => console.log(err))
 })
-  
+   */
 //trazi govole koji su pali na pojedinoj utakmici
 app.post('/matchGoals' , (req,res) => {
   const {matchID} = req.body
@@ -371,8 +377,65 @@ app.get('/getMatches', async (req,res) => {
 app.post('/addTeamMatchPlayer', async (req,res) => {
   const {matchid, hometeamid, awayteamid, homePlayersIds, awayPlayersIds, homeScore, awayScore} = req.body
 
-  console.log(matchid,hometeamid,awayteamid,homePlayersIds,awayPlayersIds,homeScore,awayScore)
-  const score = `${homeScore}:${awayScore}`
+   console.log(matchid,hometeamid,awayteamid,homePlayersIds,awayPlayersIds,homeScore,awayScore)
+   const score = `${homeScore}:${awayScore}`;
+
+// Use a transaction
+postgres.transaction(async (trx) => {
+  try {
+    // Step 1: Update the `score` column in the `match` table
+    await trx('match')
+      .where('matchid', matchid)
+      .update({
+        score: score
+      });
+
+    console.log('Score updated successfully');
+
+    // Step 2: Insert into `teamplayingmatch` for home team players
+    await insertPlayersData(trx, matchid, hometeamid, homePlayersIds);
+
+    // Step 3: Insert into `teamplayingmatch` for away team players
+    await insertPlayersData(trx, matchid, awayteamid, awayPlayersIds);
+
+    // If all steps are successful, commit the transaction
+    await trx.commit();
+    console.log('Transaction committed successfully');
+  } catch (error) {
+    // If an error occurs, rollback the transaction
+    await trx.rollback();
+    console.error('Transaction failed:', error);
+  }
+});
+
+// Function to insert players data into `teammatchplayer` and `goal` tables
+async function insertPlayersData(trx, matchid, teamid, playersData) {
+  
+
+  for (const player of playersData) {
+    // Insert into `teampmatchplayer`
+    await trx('teammatchplayer').insert({
+      matchid: matchid,
+      teamid: teamid,
+      playerid: player.playerid
+    });
+
+    console.log('Inserted into teamplayingmatch successfully');
+
+    // Insert into `goal` multiple times based on the number of goals
+    for (let i = 0; i < parseInt(player.goals); i++) {
+      await trx('goal').insert({
+        matchid: matchid,
+        playerid: player.playerid,
+        teamid: teamid,
+        timeofgoal:1
+      });
+
+      console.log('Inserted into goal successfully');
+    }
+  }
+}
+ /* const score = `${homeScore}:${awayScore}`
   
   // Step 1: Update the `score` column in the `match` table
   postgres('match')
@@ -410,7 +473,7 @@ app.post('/addTeamMatchPlayer', async (req,res) => {
     // Insert records for away team players
     for (const playerid of awayPlayersIds) {
       insertTeamPlayingMatch(matchid, awayteamid, playerid);
-    }
+    } */
     
 })
 
