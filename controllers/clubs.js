@@ -18,7 +18,33 @@ const getClubsList = (req,res, postgres) => {
     .catch(err => console.log(err));
   }
 
+  const addClub = (req,res, postgres) =>{
+    const { clubID, teamName } = req.body;
 
+    console.log(typeof clubID, typeof teamName)
+    // Check if the parameters are of the proper type
+    if (typeof clubID !== 'number' || typeof teamName !== 'string') {
+      return res.status(400).json({ error: 'Invalid data types' });
+    }
+  
+    // Create a new club record in the database
+    try {
+      const tableName = 'team'
+      const teamData = {
+        teamid: clubID, // Replace with your teamID
+        teamname: teamName, // Replace with your teamname
+      };
+  
+      postgres(tableName).insert(teamData).then(() => console.log('Data inserted successfully'))
+      .finally(() => {
+        postgres.destroy(); // Close the database connection when done
+      });
+      
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to save to the database' });
+    }
+  }
 
 
 
@@ -44,6 +70,7 @@ const getClubsList = (req,res, postgres) => {
   module.exports = {
     getClubsList,
     getClubBySeason,
-    getClubGames
+    getClubGames,
+    addClub
 };
 
