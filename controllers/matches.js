@@ -78,8 +78,9 @@ const addMatch = async (req, res, postgres) => {
   });
 }
 
-const getMatchesFormatted = async (req,res) =>{
+const getMatchesFormatted = async (req,res, postgres) =>{
   const seasonID= 1
+
   postgres('teamplayingmatch')
   .select('match.matchid', 'team.teamname', 'match.score', 'teamplayingmatch.home', 'match.date', 'match.time', 'team.teamid')
   .join('match', 'teamplayingmatch.matchid', '=', 'match.matchid')

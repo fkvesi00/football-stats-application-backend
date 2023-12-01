@@ -29,6 +29,7 @@ const clubs = require('./controllers/clubs')
 const players = require('./controllers/players')
 const matches = require('./controllers/matches')
 const goals = require('./controllers/goals')
+const teamMatchPlayer = require('./controllers/teamPlayerMatch')
 
 //pronalazi sve klubove
 app.get('/clubs', (req,res) =>{clubs.getClubsList(req,res, postgres)})
@@ -78,69 +79,23 @@ app.post('/matches/addMatch',(req, res) => {matches.addMatch(req,res,postgres)})
 //dodaj igraca u klub
 app.post('/players/addPlayerToClub',(req,res) => {players.addPlayerToClub(req,res,postgres)})
 
+//pronalazi sve igrace koji su nastupili u pojedinoj utakmici
+app.post('/teamPlayerMatch/getApp', (req,res) => {teamMatchPlayer.getTeamMatchPlayer(req, res, postgres)})
+
 //dodaj igrace koji nastupaju na utakmici i njihove golove
-app.post('/addTeamMatchPlayer', async (req,res) => {
-  const {matchid, hometeamid, awayteamid, homePlayersIds, awayPlayersIds, homeScore, awayScore} = req.body
+app.post('/teamPlayerMatch/addAppGoals', (req,res) => {teamMatchPlayer.addTeamMatchPlayer(req,res,postgres)})
 
-   console.log(matchid,hometeamid,awayteamid,homePlayersIds,awayPlayersIds,homeScore,awayScore)
-   const score = `${homeScore}:${awayScore}`;
+//pronadi vec formatirane matcheve
+app.get('/matches/getMatchesFormatted',(req, res) => {matches.getMatchesFormatted(req,res,postgres)})
 
-// Use a transaction
-postgres.transaction(async (trx) => {
-  try {
-    // Step 1: Update the `score` column in the `match` table
-    await trx('match')
-      .where('matchid', matchid)
-      .update({
-        score: score
-      });
+app.listen(port, ()=>{
+  console.log(`Sluša na ${port}`);
+})
 
-    console.log('Score updated successfully');
+//dodaj igrace koji nastupaju na utakmici i njihove golove
 
-    // Step 2: Insert into `teamplayingmatch` for home team players
-    await insertPlayersData(trx, matchid, hometeamid, homePlayersIds);
 
-    // Step 3: Insert into `teamplayingmatch` for away team players
-    await insertPlayersData(trx, matchid, awayteamid, awayPlayersIds);
-
-    // If all steps are successful, commit the transaction
-    await trx.commit();
-    console.log('Transaction committed successfully');
-  } catch (error) {
-    // If an error occurs, rollback the transaction
-    await trx.rollback();
-    console.error('Transaction failed:', error);
-  }
-});
-
-// Function to insert players data into `teammatchplayer` and `goal` tables
-async function insertPlayersData(trx, matchid, teamid, playersData) {
-  
-
-  for (const player of playersData) {
-    // Insert into `teampmatchplayer`
-    await trx('teammatchplayer').insert({
-      matchid: matchid,
-      teamid: teamid,
-      playerid: player.playerid
-    });
-
-    console.log('Inserted into teamplayingmatch successfully');
-
-    // Insert into `goal` multiple times based on the number of goals
-    for (let i = 0; i < parseInt(player.goals); i++) {
-      await trx('goal').insert({
-        matchid: matchid,
-        playerid: player.playerid,
-        teamid: teamid,
-        timeofgoal:1
-      });
-
-      console.log('Inserted into goal successfully');
-    }
-  }
-}
- /* const score = `${homeScore}:${awayScore}`
+/* const score = `${homeScore}:${awayScore}`
   
   // Step 1: Update the `score` column in the `match` table
   postgres('match')
@@ -180,10 +135,10 @@ async function insertPlayersData(trx, matchid, teamid, playersData) {
       insertTeamPlayingMatch(matchid, awayteamid, playerid);
     } */
     
-})
+
 
 //pronalazi sve igrace koji su nastupili u pojedinoj utakmici                                            (nismo dodali sezonu a mozda i ne moramo vidi cemo)
-app.post('/teamMatchPlayer', (req, res) => {
+/* app.post('/teamMatchPlayer', (req, res) => {
   const {matchID} = req.body;
   postgres('teammatchplayer')
   .select('matchid', 'team.teamid', 'teamname', 'playername', 'player.playerid')
@@ -192,12 +147,10 @@ app.post('/teamMatchPlayer', (req, res) => {
   .where('matchid', matchID)
   .then( data => res.json(data))
   .catch(err => console.log(err));
-})
+}) */
 
 
-app.listen(port, ()=>{
-  console.log(`Sluša na ${port}`);
-})
+
 
 /* app.post('/teamBySeason', (req,res) =>{
   const {seasonID} = req.body

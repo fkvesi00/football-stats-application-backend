@@ -1,7 +1,7 @@
-const getClubsList = (req,res, postgres) => {
-    //pronalazi sve klubove
+const getClubsList = async (req,res, postgres) => {
+     //pronalazi sve klubove
     postgres.select('*').from('team').then(data => res.json(data))
-    .catch(err => console.log(err));
+    .catch(err => console.log(err)); 
   }
 
   const getClubGames = (req,res, postgres) => {
@@ -36,9 +36,6 @@ const getClubsList = (req,res, postgres) => {
       };
   
       postgres(tableName).insert(teamData).then(() => console.log('Data inserted successfully'))
-      .finally(() => {
-        postgres.destroy(); // Close the database connection when done
-      });
       
     } catch (error) {
       console.error(error);
