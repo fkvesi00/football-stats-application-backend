@@ -13,8 +13,8 @@ const getPlayersOfClub = (req,res,postgres) => {
     const {teamID} = req.body
   postgres('player')
   .select('*')
-  .join('playerteam', 'player.playerid', '=', 'playerteam.playerid')
-  .where('playerteam.teamid', teamID)
+  .join('playerteamseason', 'player.playerid', '=', 'playerteamseason.playerid')
+  .where('playerteamseason.teamid', teamID)
   .then(data => res.json(data))
   .catch(err => console.log(err));
 }
@@ -78,28 +78,25 @@ const addPlayer = (req,res,postgres) => {
 }
 
 
-const addPlayerToClub =async (req,res) => {
-    const {playerid, teamid, seasonid} = req.body
-    
-    postgres.transaction((trx) => {
-      return trx
-        .insert({ playerid, teamid })
-        .into('playerteam')
-        .then(() => {
-          return trx
-            .insert({ playerid, teamid, seasonid })
-            .into('playerteamseason');
-        })
-        .then(trx.commit)
-        .catch(trx.rollback);
-    })
-      .then(() => {
-        console.log('Transaction complete. Data inserted successfully. Player is added to club');
-      })
-      .catch((err) => {
-        console.error('Error inserting data:', err);
-      })
-}
+const addPlayerToClub = async (req, res, postgres) => {
+  const { playerid, teamid, seasonid } = req.body;
+
+  try {
+    await postgres.transaction(async (trx) => {
+      await trx
+        .insert({ playerid, teamid, seasonid })
+        .into('playerteamseason');
+
+      // Additional transactions or operations can be added here if needed
+
+      trx.commit();
+    });
+
+    console.log('Transaction complete. Data inserted successfully. Player is added to club');
+  } catch (err) {
+    console.error('Error inserting data:', err);
+  }
+};
 
 module.exports = {
     getPlayersList,

@@ -30,6 +30,7 @@ const players = require('./controllers/players')
 const matches = require('./controllers/matches')
 const goals = require('./controllers/goals')
 const teamMatchPlayer = require('./controllers/teamPlayerMatch')
+const calculations = require('./controllers/calculations')
 
 //pronalazi sve klubove
 app.get('/clubs', (req,res) =>{clubs.getClubsList(req,res, postgres)})
@@ -50,7 +51,7 @@ app.post('/players/clubPlayers', (req,res) => {players.getPlayersOfClub(req,res,
 app.post('/matches/allMatches', (req,res) => {matches.getMatchesBySeason(req,res,postgres)})
 
 //trazi match po matchID
-app.post('/matches/:id', (req,res) => {matches.findMatchById(req,res,postgres)})
+app.post('/matches/id', (req,res) => {matches.findMatchById(req,res,postgres)})
 
 //koji igrac je zabio gol na utakmici
 app.post('/goals/matchScorers', (req,res) => {goals.scorersOfMatch(req,res,postgres)})
@@ -88,9 +89,15 @@ app.post('/teamPlayerMatch/addAppGoals', (req,res) => {teamMatchPlayer.addTeamMa
 //pronadi vec formatirane matcheve
 app.get('/matches/getMatchesFormatted',(req, res) => {matches.getMatchesFormatted(req,res,postgres)})
 
+
+app.post('/calculations/combined-route',  (req, res) => {calculations.formatMatches(req, res, postgres)});
+
 app.listen(port, ()=>{
   console.log(`Sluša na ${port}`);
 })
+
+
+
 
 //dodaj igrace koji nastupaju na utakmici i njihove golove
 
