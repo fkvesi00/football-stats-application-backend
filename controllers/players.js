@@ -67,9 +67,7 @@ const addPlayer = (req,res,postgres) => {
       };
   
       postgres(tableName).insert(teamData).then(() => console.log('Data inserted successfully'))
-      .finally(() => {
-        postgres.destroy(); // Close the database connection when done
-      });
+      
       
     } catch (error) {
       console.error(error);
@@ -88,13 +86,12 @@ const addPlayerToClub = async (req, res, postgres) => {
         .into('playerteamseason');
 
       // Additional transactions or operations can be added here if needed
-
-      trx.commit();
     });
 
     console.log('Transaction complete. Data inserted successfully. Player is added to club');
   } catch (err) {
     console.error('Error inserting data:', err);
+    // If an error occurs, the transaction will automatically be rolled back
   }
 };
 
