@@ -37,6 +37,9 @@ postgres.transaction(async (trx) => {
     // If all steps are successful, commit the transaction
     await trx.commit();
     console.log('Transaction committed successfully');
+    
+    // Send a success response to the front end
+    res.status(200).json({ success: true, message: 'Data added successfully' });
   } catch (error) {
     // If an error occurs, rollback the transaction
     await trx.rollback();
