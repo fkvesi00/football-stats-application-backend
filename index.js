@@ -36,6 +36,9 @@ const goals = require('./controllers/goals')
 const teamMatchPlayer = require('./controllers/teamPlayerMatch')
 const calculations = require('./controllers/calculations')
 
+//root
+app.get('/', (req,res) => res.json('My api is running'))
+
 //pronalazi sve klubove
 app.get('/clubs', (req,res) =>{clubs.getClubsList(req,res, postgres)})
 
