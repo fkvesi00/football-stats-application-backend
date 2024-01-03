@@ -1,21 +1,23 @@
 {
   "name": "uma-metkovic-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "A brief description of your project",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "node index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Your Name or Your Organization",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "knex": "^2.4.2",
-    "nodemon": "^2.0.22",
     "pg": "^8.11.0",
     "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
   }
 }

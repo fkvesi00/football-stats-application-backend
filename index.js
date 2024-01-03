@@ -15,10 +15,14 @@ const knex=require('knex');
 const postgres=knex({
   client: 'pg',
   connection: {
-    host : '127.0.0.1',
+    host : 'database-2.cb404o0cwdlr.eu-central-1.rds.amazonaws.com',
     user : 'postgres',
-    password : 'lozinka',
-    database : 'UMA_Metkovic'
+    password : 'Novalozinka4+',
+    database : 'postgres',
+    port: 5432,
+    ssl: {
+      rejectUnauthorized: false,
+    },
   }
 });
 
