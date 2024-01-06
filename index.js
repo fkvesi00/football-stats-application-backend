@@ -29,7 +29,7 @@ const postgres=knex({
 
 
 app.use(cors())
-app.use('/api', createProxyMiddleware({ target: 'http://52.59.252.228:5001/', changeOrigin: true }));
+app.use('/api', createProxyMiddleware({ target: 'https://52.59.252.228:5001/', changeOrigin: true }));
 
 const clubs = require('./controllers/clubs')
 const players = require('./controllers/players')
