@@ -1,4 +1,5 @@
 const express = require('express')
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express()
 
 const port = 3000
@@ -28,6 +29,7 @@ const postgres=knex({
 
 
 app.use(cors())
+app.use('/api', createProxyMiddleware({ target: 'http://52.59.252.228:5001/', changeOrigin: true }));
 
 const clubs = require('./controllers/clubs')
 const players = require('./controllers/players')
