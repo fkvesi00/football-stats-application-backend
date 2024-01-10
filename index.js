@@ -102,10 +102,6 @@ app.get('/matches/getMatchesFormatted',(req, res) => {matches.getMatchesFormatte
 
 app.post('/calculations/combined-route',  (req, res) => {calculations.formatMatches(req, res, postgres)});
 
-app.listen(port, ()=>{
-  console.log(`Sluša na ${port}`);
+app.listen(process.env.PORT || 5001, ()=>{
+  console.log(`Sluša na ${process.env.PORT}`);
 })
-
-
-
-
