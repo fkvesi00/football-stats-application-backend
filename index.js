@@ -6,7 +6,7 @@ const port = 5001;
 
 // Use cors middleware with your custom options
 app.use(cors({
-  origin: 'https://main--uma-metkovic.netlify.app/', // Replace with your client domain in production
+  origin: 'https://main--uma-metkovic.netlify.app', // Replace with your client domain in production
   optionsSuccessStatus: 200,
 }));
 
