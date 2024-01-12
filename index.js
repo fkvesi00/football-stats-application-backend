@@ -1,33 +1,38 @@
-const express = require('express')
-const cors = require("cors")
-/* const { createProxyMiddleware } = require('http-proxy-middleware'); */
-const app = express()
+const express = require('express');
+const cors = require('cors');
+const app = express();
 
-const port = 5001
+const port = 5001;
 
-app.use(cors())
+app.use(cors());
+
 app.use(express.static('public'));
-app.use(express.urlencoded({extended:false}))
-app.use(express.json())
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
-const knex=require('knex');
-
-
-
-const postgres=knex({
+const knex = require('knex');
+const postgres = knex({
   client: 'pg',
   connection: {
-    host : 'database-2.cb404o0cwdlr.eu-central-1.rds.amazonaws.com',
-    user : 'postgres',
-    password : 'Novalozinka4+',
-    database : 'postgres',
+    host: 'database-2.cb404o0cwdlr.eu-central-1.rds.amazonaws.com',
+    user: 'postgres',
+    password: 'Novalozinka4+',
+    database: 'postgres',
     port: 5432,
     ssl: {
       rejectUnauthorized: false,
     },
-  }
+  },
 });
 
+// Your routes go here
+
+const corsOptions = {
+  origin: 'https://umadomena.com', // Replace with your client domain in production
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 
 
 /* app.use('/api', createProxyMiddleware({ target: 'https://52.59.252.228:5001/', changeOrigin: true })); */
