@@ -4,7 +4,11 @@ const app = express();
 
 const port = 5001;
 
-app.use(cors());
+// Use cors middleware with your custom options
+app.use(cors({
+  origin: 'https://www.umadomena.com', // Replace with your client domain in production
+  optionsSuccessStatus: 200,
+}));
 
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: false }));
@@ -24,17 +28,7 @@ const postgres = knex({
     },
   },
 });
-
 // Your routes go here
-
-const corsOptions = {
-  origin: 'https://umadomena.com', // Replace with your client domain in production
-  optionsSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
-
-
 /* app.use('/api', createProxyMiddleware({ target: 'https://52.59.252.228:5001/', changeOrigin: true })); */
 
 const clubs = require('./controllers/clubs')
