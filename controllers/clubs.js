@@ -1,9 +1,22 @@
-const getClubsList = async (req,res, postgres) => {
-     //pronalazi sve klubove
-    postgres.select('*').from('team').then(data => res.json(data))
-    .catch(err => console.log(err)); 
-  }
+const getClubsList = async (req, res, postgres) => {
+  try {
+    // Pronalazi sve klubove
+    const data = await postgres.select('*').from('team');
+    
+    // Update the logo property for each object
+    const newData = data.map(obj => {
+      return {
+        ...obj,
+        logo: '/images/klada.jpg' // Adjust the path as needed
+      };
+    });
 
+    res.json(newData);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
   const getClubGames = (req,res, postgres) => {
     const {teamID} = req.body;
     
