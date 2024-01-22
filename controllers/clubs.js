@@ -17,6 +17,7 @@ const getClubsList = async (req, res, postgres) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+
   const getClubGames = (req,res, postgres) => {
     const {teamID} = req.body;
     
