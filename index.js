@@ -100,7 +100,8 @@ app.post('/teamPlayerMatch/addAppGoals', (req,res) => {teamMatchPlayer.addTeamMa
 app.get('/matches/getMatchesFormatted',(req, res) => {matches.getMatchesFormatted(req,res,postgres)})
 
 
-app.post('/calculations/combined-route',  (req, res) => {calculations.formatMatches(req, res, postgres)});
+app.post('/calculations/formatedTable',  (req, res) => {calculations.formatedTable(req, res, postgres)});
+
 
 app.listen( port, ()=>{
   console.log(`Sluša na ${port}`);

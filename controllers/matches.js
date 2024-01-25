@@ -127,7 +127,70 @@ const getMatchesBySeason = (req,res,postgres) => {
   }
 
 
+const getMatchesFormattedLastMatchDay = async (req, res, postgres) => {
+  const seasonID = 1;
 
+  try {
+    // Fetch the last 6 match IDs
+    const lastMatchIDs = await postgres('match')
+      .select('matchid')
+      .where('seasonid', seasonID)
+      .orderBy('matchid', 'desc')
+      .limit(6);
+
+    const matchIDs = lastMatchIDs.map((row) => row.matchid);
+
+    // Fetch the details of matches using the last 6 match IDs
+    const matchDetails = await postgres('teamplayingmatch')
+      .select(
+        'match.matchid',
+        'team.teamname',
+        'match.score',
+        'teamplayingmatch.home',
+        'match.date',
+        'match.time',
+        'team.teamid'
+      )
+      .join('match', 'teamplayingmatch.matchid', '=', 'match.matchid')
+      .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
+      .whereIn('match.matchid', matchIDs);
+
+    const formattedData = matchFormat(matchDetails);
+    res.json(formattedData);
+  } catch (err) {
+    console.error(err);
+    // Handle errors as needed
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+const matchFormat = (utakmica) => {
+  const matches1 = [];
+
+  utakmica.forEach((utakmica2, j) => {
+    for (let i = j + 1; i < utakmica.length; i++) {
+      if (utakmica2.matchid === utakmica[i].matchid) {
+        const homeTeam = utakmica2.home ? utakmica2 : utakmica[i];
+        const awayTeam = utakmica2.home ? utakmica[i] : utakmica2;
+
+        const match = {
+          match_id: utakmica2.matchid,
+          date: utakmica2.date,
+          time: utakmica2.time,
+          h_team: homeTeam.teamname,
+          h_id: homeTeam.teamid,
+          score: utakmica2.score,
+          a_team: awayTeam.teamname,
+          a_id: awayTeam.teamid,
+        };
+
+        matches1.push(match);
+      }
+    }
+  });
+
+  return matches1;
+};
   
   
   module.exports = {

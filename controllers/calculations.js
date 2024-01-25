@@ -48,18 +48,10 @@ const matchFormat = utakmica => {
   }
 
 
-  const formatMatches = async (req, res, postgres) => {
+  const formatedTable = async (req, res, postgres) => {
     try {
       // Call the getClubsList function
       const klubovi = await postgres.select('*').from('team').catch(err => console.log(err));
-     
-      // Query for matches where score is null
-      const queryMatchesWithNullScore = postgres('teamplayingmatch')
-        .select('match.matchid', 'team.teamname', 'match.score', 'teamplayingmatch.home', 'match.date', 'match.time', 'team.teamid')
-        .join('match', 'teamplayingmatch.matchid', '=', 'match.matchid')
-        .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
-        .where('match.seasonid', seasonID)
-        .whereNull('match.score');
   
       // Query for matches where score is not null
       const queryMatchesWithNonNullScore = postgres('teamplayingmatch')
@@ -69,92 +61,79 @@ const matchFormat = utakmica => {
         .where('match.seasonid', seasonID)
         .whereNotNull('match.score');
   
-      // Execute both queries asynchronously
-      Promise.all([queryMatchesWithNullScore, queryMatchesWithNonNullScore])
-        .then(([matchesWithNullScore, matchesWithNonNullScore]) => {
-          // Format the data if needed
-          const formattedMatchesWithNullScore = matchFormat(matchesWithNullScore);
-          const formattedMatchesWithNonNullScore = matchFormat(matchesWithNonNullScore);
+      // Execute the query
+      const matchesWithNonNullScore = await queryMatchesWithNonNullScore;
   
-          // You can now use or process both sets of formatted data
-          ;
-          const allGamesByClub = teamMatches(klubovi,formattedMatchesWithNonNullScore)
-          allGamesByClub.forEach(club =>{
-            const clubStats = {
-              id:0,
-              name:'',
-              won: 0,
-              draw: 0,
-              lost: 0,
-              points: 0,
-              gf: 0,
-              ga: 0,
-              pm: 0,
-              name: '',
-              rank:''
+      // Format the data if needed
+      const formattedMatchesWithNonNullScore = matchFormat(matchesWithNonNullScore);
+  
+      // Calculate statistics for all teams
+      const stats = [];
+      const allGamesByClub = teamMatches(klubovi, formattedMatchesWithNonNullScore);
+  
+      allGamesByClub.forEach(club => {
+        const clubStats = {
+          id: 0,
+          name: '',
+          won: 0,
+          draw: 0,
+          lost: 0,
+          points: 0,
+          gf: 0,
+          ga: 0,
+          pm: 0,
+          rank: ''
+        };
+  
+        clubStats.id = club.id;
+        clubStats.name = club.name;
+        for (const utakmica of club.matches) {
+          if (utakmica.h_id == club.id) {
+            clubStats.gf += parseInt(utakmica.score[0]);
+            clubStats.ga += parseInt(utakmica.score[2]);
+            clubStats.pm = clubStats.gf - clubStats.ga;
+            if (utakmica.score[0] > utakmica.score[2]) {
+              clubStats.points += 3;
+              clubStats.won++;
+            } else if (utakmica.score[0] < utakmica.score[2]) {
+              clubStats.lost++;
+            } else {
+              clubStats.draw++;
+              clubStats.points++;
             }
-            
-          clubStats.id = club.id
-          clubStats.name = club.name
-            for (const utakmica of club.matches){
-             
-            if(utakmica.h_id == club.id){
-              clubStats.gf+=parseInt(utakmica.score[0])
-              clubStats.ga+=parseInt(utakmica.score[2])
-              clubStats.pm=clubStats.gf-clubStats.ga
-              if(utakmica.score[0] > utakmica.score[2]){
-                clubStats.points+=3
-                clubStats.won++;
-              }
-              else if(utakmica.score[0] < utakmica.score[2]){
-                clubStats.lost++
-              }
-              else {
-                clubStats.draw++;
-                clubStats.points++;
-              }
-            }else{
-              clubStats.gf+=parseInt(utakmica.score[2])
-              clubStats.ga+=parseInt(utakmica.score[0])
-              clubStats.pm= clubStats.gf - clubStats.ga
-              if(utakmica.score[2] > utakmica.score[0]){
-                clubStats.won++;
-                clubStats.points+=3;
-              }else if(utakmica.score[2] < utakmica.score[0]){
-                clubStats.lost++
-              }else{
-                clubStats.draw++;
-                clubStats.points++;
-              }
+          } else {
+            clubStats.gf += parseInt(utakmica.score[2]);
+            clubStats.ga += parseInt(utakmica.score[0]);
+            clubStats.pm = clubStats.gf - clubStats.ga;
+            if (utakmica.score[2] > utakmica.score[0]) {
+              clubStats.won++;
+              clubStats.points += 3;
+            } else if (utakmica.score[2] < utakmica.score[0]) {
+              clubStats.lost++;
+            } else {
+              clubStats.draw++;
+              clubStats.points++;
             }
           }
-            stats.push(clubStats)
-          })
-          const sortedStats = stats.sort((a, b) => b.points - a.points)
-          
-          sortedStats.map((club,i) => club.rank=i)
-            
-          // Send the response or perform other actions as needed
-          res.json({
-            table:sortedStats,
-            matchesWithNullScore: formattedMatchesWithNullScore,
-            matchesWithNonNullScore: formattedMatchesWithNonNullScore,
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-          // Handle errors as needed
-          res.status(500).json({ error: 'Internal Server Error' });
-        });
+        }
+        stats.push(clubStats);
+      });
+  
+      const sortedStats = stats.sort((a, b) => b.points - a.points);
+  
+      sortedStats.map((club, i) => (club.rank = i));
+  
+      // Send only the calculated table without detailed match information
+      res.json({
+        table: sortedStats,
+      });
     } catch (err) {
       console.log(err);
       // Handle errors as needed
       res.status(500).json({ error: 'Internal Server Error' });
     }
   };
- 
-
-
-module.exports = {
-  formatMatches,
-};
+  
+  module.exports = {
+    formatedTable,
+  };
