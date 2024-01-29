@@ -125,7 +125,7 @@ app.post('/pga', (req, res) => {
       'pts.seasonid': seasonid
     })
     .groupBy('player.playerid', 'player.playername')
-    .orderBy('appearances', 'desc')
+    .orderBy('goals', 'desc')
     .then(results => {
       res.json(results);
       // Process the results here
