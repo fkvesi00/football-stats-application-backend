@@ -136,6 +136,35 @@ app.post('/pga', (req, res) => {
     });
 })
 
+//tablica strijelaca
+
+app.post('/scorers', (req, res) => {
+  const { seasonid } = req.body;
+
+  postgres
+    .select('player.playerid', 'player.playername', 'team.teamname')
+    .countDistinct('teammatchplayer.matchid as appearances')
+    .countDistinct('goal.goalid as goals')
+    .from('goal')
+    .join('teammatchplayer', 'goal.playerid', '=', 'teammatchplayer.playerid')
+    .join('player', 'goal.playerid', '=', 'player.playerid')
+    .join('team', 'goal.teamid', '=', 'team.teamid')
+    .join('match', 'teammatchplayer.matchid', '=', 'match.matchid')
+    .where('match.seasonid', '=', seasonid)  // Use seasonid from the match table
+    .groupBy('player.playerid', 'player.playername', 'team.teamname')
+    .havingRaw('count(DISTINCT goal.goalid) > 0')
+    .orderBy('goals', 'desc')
+    .then(results => {
+      res.json(results);
+      // Process the results here
+    })
+    .catch(error => {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    });
+});
+
+
 app.listen( port, ()=>{
   console.log(`Sluša na ${port}`);
 })
