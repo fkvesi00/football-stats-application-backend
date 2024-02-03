@@ -150,10 +150,11 @@ app.post('/scorers', (req, res) => {
     .join('player', 'goal.playerid', '=', 'player.playerid')
     .join('team', 'goal.teamid', '=', 'team.teamid')
     .join('match', 'teammatchplayer.matchid', '=', 'match.matchid')
-    .where('match.seasonid', '=', seasonid)  // Use seasonid from the match table
+    .where('match.seasonid', '=', seasonid)
     .groupBy('player.playerid', 'player.playername', 'team.teamname')
     .havingRaw('count(DISTINCT goal.goalid) > 0')
     .orderBy('goals', 'desc')
+    .limit(20)  // Add this line to limit the results to the first 20
     .then(results => {
       res.json(results);
       // Process the results here
