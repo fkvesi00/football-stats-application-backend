@@ -1,14 +1,16 @@
 {
   "name": "uma-metkovic-server",
   "version": "1.0.0",
-  "description": "A brief description of your project",
+  "description": "API app for amateur futsal league",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "lint": "eslint --fix",
+    "format": "prettier --write 'src/**/*.js'",
+    "start": "node index.js",
+    "prepare": "husky"
   },
-  "keywords": [],
-  "author": "Your Name or Your Organization",
+  "keywords": ["backend", "node", "express", "api"],
+  "author": "Filip Kvesic / Drago Jelavic",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
@@ -19,7 +21,16 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-promise": "^6.1.1",
     "gh-pages": "^6.1.1",
-    "nodemon": "^3.0.2"
+    "husky": "^9.0.11",
+    "nodemon": "^3.0.2",
+    "prettier": "^3.2.5"
   }
 }
