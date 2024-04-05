@@ -17,7 +17,7 @@ const matchFormat = (utakmica) => {
           h_id: homeTeam.teamid,
           score: utakmica2.score,
           a_team: awayTeam.teamname,
-          a_id: awayTeam.teamid
+          a_id: awayTeam.teamid,
         }
 
         matches1.push(match)
@@ -40,7 +40,7 @@ const teamMatches = (teams, allMatches) => {
     const object = {
       id: team.teamid,
       name: team.teamname,
-      matches: filteredArray
+      matches: filteredArray,
     }
 
     arrayOfArrays.push(object)
@@ -65,7 +65,7 @@ const formatedTable = async (req, res, postgres) => {
         'teamplayingmatch.home',
         'match.date',
         'match.time',
-        'team.teamid'
+        'team.teamid',
       )
       .join('match', 'teamplayingmatch.matchid', '=', 'match.matchid')
       .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
@@ -77,14 +77,14 @@ const formatedTable = async (req, res, postgres) => {
 
     // Format the data if needed
     const formattedMatchesWithNonNullScore = matchFormat(
-      matchesWithNonNullScore
+      matchesWithNonNullScore,
     )
 
     // Calculate statistics for all teams
     const stats = []
     const allGamesByClub = teamMatches(
       klubovi,
-      formattedMatchesWithNonNullScore
+      formattedMatchesWithNonNullScore,
     )
 
     allGamesByClub.forEach((club) => {
@@ -98,7 +98,7 @@ const formatedTable = async (req, res, postgres) => {
         gf: 0,
         ga: 0,
         pm: 0,
-        rank: ''
+        rank: '',
       }
 
       clubStats.id = club.id
@@ -141,7 +141,7 @@ const formatedTable = async (req, res, postgres) => {
 
     // Send only the calculated table without detailed match information
     res.json({
-      table: sortedStats
+      table: sortedStats,
     })
   } catch (err) {
     console.log(err)
@@ -151,5 +151,5 @@ const formatedTable = async (req, res, postgres) => {
 }
 
 module.exports = {
-  formatedTable
+  formatedTable,
 }

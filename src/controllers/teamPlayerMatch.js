@@ -7,7 +7,7 @@ const getTeamMatchPlayer = (req, res, postgres) => {
       'team.teamid',
       'teamname',
       'playername',
-      'player.playerid'
+      'player.playerid',
     )
     .join('player', 'teammatchplayer.playerid', '=', 'player.playerid')
     .join('team', 'team.teamid', '=', 'teammatchplayer.teamid')
@@ -24,7 +24,7 @@ const addTeamMatchPlayer = async (req, res, postgres) => {
     homePlayersIds,
     awayPlayersIds,
     homeScore,
-    awayScore
+    awayScore,
   } = req.body
 
   console.log(
@@ -34,7 +34,7 @@ const addTeamMatchPlayer = async (req, res, postgres) => {
     homePlayersIds,
     awayPlayersIds,
     homeScore,
-    awayScore
+    awayScore,
   )
   const score = `${homeScore}:${awayScore}`
 
@@ -43,7 +43,7 @@ const addTeamMatchPlayer = async (req, res, postgres) => {
     try {
       // Step 1: Update the `score` column in the `match` table
       await trx('match').where('matchid', matchid).update({
-        score
+        score,
       })
 
       console.log('Score updated successfully')
@@ -70,13 +70,13 @@ const addTeamMatchPlayer = async (req, res, postgres) => {
   })
 
   // Function to insert players data into `teammatchplayer` and `goal` tables
-  async function insertPlayersData (trx, matchid, teamid, playersData) {
+  async function insertPlayersData(trx, matchid, teamid, playersData) {
     for (const player of playersData) {
       // Insert into `teampmatchplayer`
       await trx('teammatchplayer').insert({
         matchid,
         teamid,
-        playerid: player.playerid
+        playerid: player.playerid,
       })
 
       console.log('Inserted into teamplayingmatch successfully')
@@ -87,7 +87,7 @@ const addTeamMatchPlayer = async (req, res, postgres) => {
           matchid,
           playerid: player.playerid,
           teamid,
-          timeofgoal: 1
+          timeofgoal: 1,
         })
 
         console.log('Inserted into goal successfully')
@@ -98,5 +98,5 @@ const addTeamMatchPlayer = async (req, res, postgres) => {
 
 module.exports = {
   getTeamMatchPlayer,
-  addTeamMatchPlayer
+  addTeamMatchPlayer,
 }

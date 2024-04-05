@@ -11,16 +11,16 @@ const db = knex({
     database: process.env.DB_DATABASE,
     port: process.env.DB_PORT,
     ssl: {
-      rejectUnauthorized: false
-    }
-  }
+      rejectUnauthorized: false,
+    },
+  },
 })
 
 db.raw('select 1+1 as result')
   .then(() => {
     console.log('Database connection successful')
   })
-  .catch(err => {
+  .catch((err) => {
     console.error('Error connecting to database:', err)
   })
 

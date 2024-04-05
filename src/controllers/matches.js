@@ -9,7 +9,7 @@ const getMatchesBySeason = (req, res, postgres) => {
       'teamplayingmatch.home',
       'match.date',
       'match.time',
-      'team.teamid'
+      'team.teamid',
     )
     .join('match', 'teamplayingmatch.matchid', '=', 'match.matchid')
     .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
@@ -32,7 +32,7 @@ const findMatchById = (req, res, postgres) => {
       'date',
       'time',
       'score',
-      'home'
+      'home',
     )
     .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
     .join('match', 'match.matchid', '=', 'teamplayingmatch.matchid')
@@ -50,16 +50,16 @@ const addMatch = async (req, res, postgres) => {
     date: Date,
     time: Time,
     score: null,
-    seasonid: 1
+    seasonid: 1,
   }
   console.log(typeof Date, typeof Time)
 
   const homeTeamData = {
-    TeamName: Number(Home) // Replace with actual team name
+    TeamName: Number(Home), // Replace with actual team name
   }
 
   const awayTeamData = {
-    TeamName: Number(Away) // Replace with actual team name
+    TeamName: Number(Away), // Replace with actual team name
   }
 
   postgres.transaction(async (trx) => {
@@ -74,14 +74,14 @@ const addMatch = async (req, res, postgres) => {
       await trx('teamplayingmatch').insert({
         matchid: matchId,
         teamid: homeTeamData.TeamName, // Insert the "Home" team ID (if you have it)
-        home: true
+        home: true,
       })
 
       // Insert data into the "teamplayingmatch" relation for the "Away" team
       await trx('teamplayingmatch').insert({
         matchid: matchId,
         teamid: awayTeamData.TeamName, // Insert the "Away" team ID (if you have it)
-        home: false
+        home: false,
       })
 
       // Commit the transaction
@@ -107,7 +107,7 @@ const getMatchesFormatted = async (req, res, postgres) => {
       'teamplayingmatch.home',
       'match.date',
       'match.time',
-      'team.teamid'
+      'team.teamid',
     )
     .join('match', 'teamplayingmatch.matchid', '=', 'match.matchid')
     .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
@@ -139,7 +139,7 @@ const getMatchesFormatted = async (req, res, postgres) => {
             h_id: homeTeam.teamid,
             score: utakmica2.score,
             a_team: awayTeam.teamname,
-            a_id: awayTeam.teamid
+            a_id: awayTeam.teamid,
           }
 
           matches1.push(match)
@@ -173,7 +173,7 @@ const getMatchesFormattedLastMatchDay = async (req, res, postgres) => {
         'teamplayingmatch.home',
         'match.date',
         'match.time',
-        'team.teamid'
+        'team.teamid',
       )
       .join('match', 'teamplayingmatch.matchid', '=', 'match.matchid')
       .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
@@ -205,7 +205,7 @@ const matchFormat = (utakmica) => {
           h_id: homeTeam.teamid,
           score: utakmica2.score,
           a_team: awayTeam.teamname,
-          a_id: awayTeam.teamid
+          a_id: awayTeam.teamid,
         }
 
         matches1.push(match)
@@ -221,5 +221,5 @@ module.exports = {
   getMatchesFormatted,
   getMatchesFormattedLastMatchDay,
   findMatchById,
-  addMatch
+  addMatch,
 }
