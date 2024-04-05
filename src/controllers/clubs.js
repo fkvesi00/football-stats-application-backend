@@ -7,7 +7,7 @@ const getClubsList = async (req, res, postgres) => {
     const newData = data.map((obj) => {
       return {
         ...obj,
-        logo: '/images/klada.jpg', // Adjust the path as needed
+        logo: '/images/klada.jpg' // Adjust the path as needed
       }
     })
 
@@ -29,7 +29,7 @@ const getClubGames = (req, res, postgres) => {
       'teamplayingmatch.home',
       'match.date',
       'match.time',
-      'team.teamid',
+      'team.teamid'
     )
     .join('match', 'teamplayingmatch.matchid', '=', 'match.matchid')
     .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
@@ -54,7 +54,7 @@ const addClub = (req, res, postgres) => {
     const tableName = 'team'
     const teamData = {
       teamid: clubID, // Replace with your teamID
-      teamname: teamName, // Replace with your teamname
+      teamname: teamName // Replace with your teamname
     }
 
     postgres(tableName)
@@ -75,7 +75,7 @@ const getClubBySeason = (req, res, postgres) => {
     .join('teamplayingmatch', 'team.teamid', 'teamplayingmatch.teamid')
     .whereIn(
       'matchid',
-      postgres('match').select('matchid').where('seasonid', seasonID),
+      postgres('match').select('matchid').where('seasonid', seasonID)
     )
     .then((data) => res.json(data))
     .catch((err) => console.log(err))
@@ -85,5 +85,5 @@ module.exports = {
   getClubsList,
   getClubBySeason,
   getClubGames,
-  addClub,
+  addClub
 }

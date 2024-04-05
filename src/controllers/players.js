@@ -17,7 +17,7 @@ const getPlayersOfClub = (req, res, postgres) => {
       'playerteamseason',
       'player.playerid',
       '=',
-      'playerteamseason.playerid',
+      'playerteamseason.playerid'
     )
     .where('playerteamseason.teamid', teamID)
     .then((data) => res.json(data))
@@ -60,7 +60,7 @@ const addPlayer = (req, res, postgres) => {
     typeof playerID,
     typeof playerName,
     typeof playerBirth,
-    typeof playerNationality,
+    typeof playerNationality
   )
   // Check if the parameters are of the proper type
   if (
@@ -79,7 +79,7 @@ const addPlayer = (req, res, postgres) => {
       playerid: playerID,
       playername: playerName,
       playerbirth: playerBirth,
-      playernationality: playerNationality,
+      playernationality: playerNationality
     }
 
     postgres(tableName)
@@ -102,7 +102,7 @@ const addPlayerToClub = async (req, res, postgres) => {
     })
 
     console.log(
-      'Transaction complete. Data inserted successfully. Player is added to club',
+      'Transaction complete. Data inserted successfully. Player is added to club'
     )
   } catch (err) {
     console.error('Error inserting data:', err)
@@ -116,5 +116,5 @@ module.exports = {
   getPlayerAppAllSeasons,
   getPlayer,
   addPlayer,
-  addPlayerToClub,
+  addPlayerToClub
 }

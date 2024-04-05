@@ -36,5 +36,5 @@ const allPlayerGoals = (req, res, postgres) => {
 module.exports = {
   scorersOfMatch,
   goalsOfMatch,
-  allPlayerGoals,
+  allPlayerGoals
 }
