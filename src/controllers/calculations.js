@@ -1,4 +1,5 @@
 /* eslint-disable array-callback-return */
+const db = require('./src/database/connection')
 const seasonID = 1
 const matchFormat = (utakmica) => {
   const matches1 = []
@@ -48,16 +49,16 @@ const teamMatches = (teams, allMatches) => {
   return arrayOfArrays
 }
 
-const formatedTable = async (req, res, postgres) => {
+const formatedTable = async (req, res) => {
   try {
     // Call the getClubsList function
-    const klubovi = await postgres
+    const klubovi = await db
       .select('*')
       .from('team')
       .catch((err) => console.log(err))
 
     // Query for matches where score is not null
-    const queryMatchesWithNonNullScore = postgres('teamplayingmatch')
+    const queryMatchesWithNonNullScore = db('teamplayingmatch')
       .select(
         'match.matchid',
         'team.teamname',

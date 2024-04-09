@@ -1,7 +1,9 @@
-const getClubsList = async (req, res, postgres) => {
+const db = require('./src/database/connection')
+
+const getClubsList = async (req, res) => {
   try {
     // Pronalazi sve klubove
-    const data = await postgres.select('*').from('team')
+    const data = await db.select('*').from('team')
 
     // Update the logo property for each object
     const newData = data.map((obj) => {
@@ -18,10 +20,10 @@ const getClubsList = async (req, res, postgres) => {
   }
 }
 
-const getClubGames = (req, res, postgres) => {
+const getClubGames = (req, res) => {
   const { teamID } = req.body
 
-  postgres('teamplayingmatch')
+  db('teamplayingmatch')
     .select(
       'match.matchid',
       'team.teamname',
@@ -40,7 +42,7 @@ const getClubGames = (req, res, postgres) => {
     .catch((err) => console.log(err))
 }
 
-const addClub = (req, res, postgres) => {
+const addClub = (req, res) => {
   const { clubID, teamName } = req.body
 
   console.log(typeof clubID, typeof teamName)
@@ -57,7 +59,7 @@ const addClub = (req, res, postgres) => {
       teamname: teamName, // Replace with your teamname
     }
 
-    postgres(tableName)
+    db(tableName)
       .insert(teamData)
       .then(() => console.log('Data inserted successfully'))
   } catch (error) {
@@ -66,16 +68,15 @@ const addClub = (req, res, postgres) => {
   }
 }
 
-const getClubBySeason = (req, res, postgres) => {
+const getClubBySeason = (req, res) => {
   const { seasonID } = req.body
 
-  postgres
-    .distinct('team.teamname', 'team.teamid')
+  db.distinct('team.teamname', 'team.teamid')
     .from('team')
     .join('teamplayingmatch', 'team.teamid', 'teamplayingmatch.teamid')
     .whereIn(
       'matchid',
-      postgres('match').select('matchid').where('seasonid', seasonID),
+      db('match').select('matchid').where('seasonid', seasonID),
     )
     .then((data) => res.json(data))
     .catch((err) => console.log(err))

@@ -1,7 +1,9 @@
-const getTeamMatchPlayer = (req, res, postgres) => {
+const db = require('./src/database/connection')
+
+const getTeamMatchPlayer = (req, res) => {
   const { matchID } = req.body
 
-  postgres('teammatchplayer')
+  db('teammatchplayer')
     .select(
       'matchid',
       'team.teamid',
@@ -16,7 +18,7 @@ const getTeamMatchPlayer = (req, res, postgres) => {
     .catch((err) => console.log(err))
 }
 
-const addTeamMatchPlayer = async (req, res, postgres) => {
+const addTeamMatchPlayer = async (req, res) => {
   const {
     matchid,
     hometeamid,
@@ -39,7 +41,7 @@ const addTeamMatchPlayer = async (req, res, postgres) => {
   const score = `${homeScore}:${awayScore}`
 
   // Use a transaction
-  postgres.transaction(async (trx) => {
+  db.transaction(async (trx) => {
     try {
       // Step 1: Update the `score` column in the `match` table
       await trx('match').where('matchid', matchid).update({

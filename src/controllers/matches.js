@@ -1,7 +1,9 @@
-const getMatchesBySeason = (req, res, postgres) => {
+const db = require('./src/database/connection')
+
+const getMatchesBySeason = (req, res) => {
   const { seasonID } = req.body
 
-  postgres('teamplayingmatch')
+  db('teamplayingmatch')
     .select(
       'match.matchid',
       'team.teamname',
@@ -20,10 +22,10 @@ const getMatchesBySeason = (req, res, postgres) => {
     .catch((err) => console.log(err))
 }
 
-const findMatchById = (req, res, postgres) => {
+const findMatchById = (req, res) => {
   const { matchID } = req.body
 
-  postgres('teamplayingmatch')
+  db('teamplayingmatch')
     .select(
       'match.matchid',
       'team.teamid',
@@ -41,7 +43,7 @@ const findMatchById = (req, res, postgres) => {
     .catch((err) => console.log(err))
 }
 
-const addMatch = async (req, res, postgres) => {
+const addMatch = async (req, res) => {
   const { MatchID, Date, Time, Home, Score, Away } = req.body
   console.log(MatchID, Date, Time, Home, Score, Away)
 
@@ -62,7 +64,7 @@ const addMatch = async (req, res, postgres) => {
     TeamName: Number(Away), // Replace with actual team name
   }
 
-  postgres.transaction(async (trx) => {
+  db.transaction(async (trx) => {
     try {
       // Insert data into the "Match" relation
       const [matchObject] = await trx('match')
@@ -96,10 +98,10 @@ const addMatch = async (req, res, postgres) => {
   })
 }
 
-const getMatchesFormatted = async (req, res, postgres) => {
+const getMatchesFormatted = async (req, res) => {
   const seasonID = 1
 
-  postgres('teamplayingmatch')
+  db('teamplayingmatch')
     .select(
       'match.matchid',
       'team.teamname',
@@ -151,12 +153,12 @@ const getMatchesFormatted = async (req, res, postgres) => {
   }
 }
 
-const getMatchesFormattedLastMatchDay = async (req, res, postgres) => {
+const getMatchesFormattedLastMatchDay = async (req, res) => {
   const seasonID = 1
 
   try {
     // Fetch the last 6 match IDs
-    const lastMatchIDs = await postgres('match')
+    const lastMatchIDs = await db('match')
       .select('matchid')
       .where('seasonid', seasonID)
       .orderBy('matchid', 'desc')
@@ -165,7 +167,7 @@ const getMatchesFormattedLastMatchDay = async (req, res, postgres) => {
     const matchIDs = lastMatchIDs.map((row) => row.matchid)
 
     // Fetch the details of matches using the last 6 match IDs
-    const matchDetails = await postgres('teamplayingmatch')
+    const matchDetails = await db('teamplayingmatch')
       .select(
         'match.matchid',
         'team.teamname',
