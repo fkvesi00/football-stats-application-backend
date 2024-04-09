@@ -32,63 +32,63 @@ const calculations = require('./src/controllers/calculations')
 app.get('/', (req, res) => res.json('My api is running'))
 
 // pronalazi sve klubove
-app.get('/clubs', (req, res) => { clubs.getClubsList(req, res, db) })
+app.get('/clubs', clubs.getClubsList)
 
 // pronadi sve klubove u sezoni
-app.post('/clubs/season', (req, res) => { clubs.getClubBySeason(req, res, db) })
+app.post('/clubs/season', clubs.getClubBySeason)
 
 // trazi utakmice kluba
-app.post('/clubs/games', (req, res) => { clubs.getClubGames(req, res, db) })
+app.post('/clubs/games', clubs.getClubGames)
 
 // pronalazi sve igrace
-app.get('/players', (req, res) => { players.getPlayersList(req, res, db) })
+app.get('/players', players.getPlayersList)
 
 // trazi igrace po klubu(nije ukljucena sezona)
-app.post('/players/clubPlayers', (req, res) => { players.getPlayersOfClub(req, res, db) })
+app.post('/players/clubPlayers', players.getPlayersOfClub)
 
 // trazi sve utakmice lige u toj sezoni(treba ubacit i natjecanje, uzimamo u obzir i odigrane i utakmice koje se trebaju odigrati)
-app.post('/matches/allMatches', (req, res) => { matches.getMatchesBySeason(req, res, db) })
+app.post('/matches/allMatches', matches.getMatchesBySeason)
 
 // trazi match po matchID
-app.post('/matches/id', (req, res) => { matches.findMatchById(req, res, db) })
+app.post('/matches/id', matches.findMatchById)
 
 // koji igrac je zabio gol na utakmici
-app.post('/goals/matchScorers', (req, res) => { goals.scorersOfMatch(req, res, db) })
+app.post('/goals/matchScorers', goals.scorersOfMatch)
 
 // trazi govole koji su pali na pojedinoj utakmici
-app.post('/goals/matchGoals', (req, res) => { goals.goalsOfMatch(req, res, db) })
+app.post('/goals/matchGoals', goals.goalsOfMatch)
 
 // nastupi igraca u svim sezonama
-app.post('/players/playerApp', (req, res) => { players.getPlayerAppAllSeasons(req, res, db) })
+app.post('/players/playerApp', players.getPlayerAppAllSeasons)
 
 // trazi pojedinog igraca
-app.post('/players/player', (req, res) => { players.getPlayer(req, res, db) })
+app.post('/players/player', players.getPlayer)
 
 // trazi sve golove igraca u svim sezonma za pojednie timove
-app.post('/goals/player', (req, res) => { goals.allPlayerGoals(req, res, db) })
+app.post('/goals/player', goals.allPlayerGoals)
 
 // dodaj klub
-app.post('/clubs/addClub', (req, res) => { clubs.addClub(req, res, db) })
+app.post('/clubs/addClub', clubs.addClub)
 
 // dodaj igraca
-app.post('/players/addPlayer', (req, res) => { players.addPlayer(req, res, db) })
+app.post('/players/addPlayer', players.addPlayer)
 
 // dodaj utakmicu
-app.post('/matches/addMatch', (req, res) => { matches.addMatch(req, res, db) })
+app.post('/matches/addMatch', matches.addMatch)
 
 // dodaj igraca u klub
-app.post('/players/addPlayerToClub', (req, res) => { players.addPlayerToClub(req, res, db) })
+app.post('/players/addPlayerToClub', players.addPlayerToClub)
 
 // pronalazi sve igrace koji su nastupili u pojedinoj utakmici
-app.post('/teamPlayerMatch/getApp', (req, res) => { teamMatchPlayer.getTeamMatchPlayer(req, res, db) })
+app.post('/teamPlayerMatch/getApp',teamMatchPlayer.getTeamMatchPlayer)
 
 // dodaj igrace koji nastupaju na utakmici i njihove golove
-app.post('/teamPlayerMatch/addAppGoals', (req, res) => { teamMatchPlayer.addTeamMatchPlayer(req, res, db) })
+app.post('/teamPlayerMatch/addAppGoals',teamMatchPlayer.addTeamMatchPlayer)
 
 // pronadi vec formatirane matcheve
-app.get('/matches/getMatchesFormatted', (req, res) => { matches.getMatchesFormatted(req, res, db) })
+app.get('/matches/getMatchesFormatted',matches.getMatchesFormatted)
 
-app.post('/calculations/formatedTable', (req, res) => { calculations.formatedTable(req, res, db) })
+app.post('/calculations/formatedTable',calculations.formatedTable)
 
 // geetting list of apperances and goals fur jeden club
 app.post('/pga', (req, res) => {
