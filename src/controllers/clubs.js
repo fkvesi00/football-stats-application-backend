@@ -1,4 +1,4 @@
-const db = require('./src/database/connection')
+const db = require('../database/connection')
 
 const getClubsList = async (req, res) => {
   try {

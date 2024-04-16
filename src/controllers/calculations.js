@@ -1,5 +1,5 @@
 /* eslint-disable array-callback-return */
-const db = require('./src/database/connection')
+const db = require('../database/connection')
 const seasonID = 1
 const matchFormat = (utakmica) => {
   const matches1 = []
