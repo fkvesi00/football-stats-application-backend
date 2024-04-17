@@ -15,5 +15,5 @@ module.exports = {
   teamPlayerMatchRoute,
   goalRoute,
   pgaRoute,
-  scorerRoute
+  scorerRoute,
 }
