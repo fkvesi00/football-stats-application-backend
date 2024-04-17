@@ -4,6 +4,8 @@ const matchesRoute = require('./matches')
 const calculationRoute = require('./calculations')
 const teamPlayerMatchRoute = require('./teamPlayerMatch')
 const goalRoute = require('./goals')
+const pgaRoute = require('./pga')
+const scorerRoute = require('./scorers')
 
 module.exports = {
   clubRoute,
@@ -12,4 +14,6 @@ module.exports = {
   calculationRoute,
   teamPlayerMatchRoute,
   goalRoute,
+  pgaRoute,
+  scorerRoute
 }
