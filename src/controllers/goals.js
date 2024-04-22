@@ -1,29 +1,29 @@
-const scorersOfMatch = (req, res, postgres) => {
+const db = require('../database/connection')
+
+const scorersOfMatch = (req, res) => {
   const { matchID } = req.body
 
-  postgres('goal')
+  db('goal')
     .select('*')
     .where('matchid', matchID)
     .then((data) => res.json(data))
     .catch((err) => console.log(err))
 }
 
-const goalsOfMatch = (req, res, postgres) => {
+const goalsOfMatch = (req, res) => {
   const { matchID } = req.body
 
-  postgres
-    .select('*')
+  db.select('*')
     .from('goal')
     .where('matchid', '=', matchID)
     .then((data) => res.json(data))
     .catch((err) => console.log(err))
 }
 
-const allPlayerGoals = (req, res, postgres) => {
+const allPlayerGoals = (req, res) => {
   const { playerID } = req.body
 
-  postgres
-    .select('goal.playerid', 'goal.teamid', 'match.seasonid')
+  db.select('goal.playerid', 'goal.teamid', 'match.seasonid')
     .count('goal.goalid as goals')
     .from('goal')
     .join('match', 'goal.matchid', 'match.matchid')

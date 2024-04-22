@@ -1,6 +1,7 @@
-const getPlayersList = (req, res, postgres) => {
-  postgres
-    .select('*')
+const db = require('../database/connection')
+
+const getPlayersList = (req, res) => {
+  db.select('*')
     .from('player')
     .then((data) => res.json(data))
     .catch((err) => {
@@ -9,9 +10,9 @@ const getPlayersList = (req, res, postgres) => {
     })
 }
 
-const getPlayersOfClub = (req, res, postgres) => {
+const getPlayersOfClub = (req, res) => {
   const { teamID } = req.body
-  postgres('player')
+  db('player')
     .select('*')
     .join(
       'playerteamseason',
@@ -24,11 +25,10 @@ const getPlayersOfClub = (req, res, postgres) => {
     .catch((err) => console.log(err))
 }
 
-const getPlayerAppAllSeasons = (req, res, postgres) => {
+const getPlayerAppAllSeasons = (req, res) => {
   const { playerID } = req.body
 
-  postgres
-    .select('seasonname', 'teamname')
+  db.select('seasonname', 'teamname')
     .count('playername as app')
     .select('team.teamid', 'season.seasonid')
     .from('player')
@@ -42,18 +42,17 @@ const getPlayerAppAllSeasons = (req, res, postgres) => {
     .catch((err) => console.log(err))
 }
 
-const getPlayer = (req, res, postgres) => {
+const getPlayer = (req, res) => {
   const { playerID } = req.body
 
-  postgres
-    .select('*')
+  db.select('*')
     .from('player')
     .where('playerid', playerID)
     .then((data) => res.json(data))
     .catch((err) => console.log(err))
 }
 
-const addPlayer = (req, res, postgres) => {
+const addPlayer = (req, res) => {
   const { playerID, playerName, playerBirth, playerNationality } = req.body
 
   console.log(
@@ -82,7 +81,7 @@ const addPlayer = (req, res, postgres) => {
       playernationality: playerNationality,
     }
 
-    postgres(tableName)
+    db(tableName)
       .insert(teamData)
       .then(() => console.log('Data inserted successfully'))
   } catch (error) {
@@ -91,11 +90,11 @@ const addPlayer = (req, res, postgres) => {
   }
 }
 
-const addPlayerToClub = async (req, res, postgres) => {
+const addPlayerToClub = async (req, res) => {
   const { playerid, teamid, seasonid } = req.body
 
   try {
-    await postgres.transaction(async (trx) => {
+    await db.transaction(async (trx) => {
       await trx.insert({ playerid, teamid, seasonid }).into('playerteamseason')
 
       // Additional transactions or operations can be added here if needed
