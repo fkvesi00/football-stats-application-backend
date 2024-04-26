@@ -26,6 +26,7 @@ app.use('/teamPlayerMatch', routeManager.teamPlayerMatchRoute)
 app.use('/goals', routeManager.goalRoute)
 app.use('/pga', routeManager.pgaRoute)
 app.use('/scorers', routeManager.scorerRoute)
+app.use('/auth', routeManager.authRoute)
 
 
 app.listen(port, () => {
