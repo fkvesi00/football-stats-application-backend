@@ -1,17 +1,28 @@
-const getMatchesBySeason = (req,res,postgres) => {
-  const {seasonID} = req.body;
-    
+//change name of fucntion to fetch matches by season and tournamentid
+const getMatchesBySeason = (req, res, postgres) => {
+  const { seasonID, tournamentid } = req.body;
+
   postgres('teamplayingmatch')
-    .select('match.matchid', 'team.teamname', 'match.score', 'teamplayingmatch.home', 'match.date', 'match.time', 'team.teamid')
+    .select(
+      'match.matchid', 
+      'team.teamname', 
+      'match.score', 
+      'teamplayingmatch.home', 
+      'match.date', 
+      'match.time', 
+      'team.teamid'
+    )
     .join('match', 'teamplayingmatch.matchid', '=', 'match.matchid')
     .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
-    .whereIn('seasonid', function() {
-      this.select('seasonid').from('match').where('seasonid', seasonID);
-    }) 
+    .where('match.seasonid', seasonID)          // Direct match on seasonID
+    .andWhere('match.tournamentid', tournamentid)  // Direct match on tournamentid
     .then(data => res.json(data))
-    .catch(err=> console.log(err));
-  }
-  
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ error: 'Unable to retrieve matches' });
+    });
+};
+
   const findMatchById = (req,res,postgres) => {
     const {matchID} = req.body;
   
