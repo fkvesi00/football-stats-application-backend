@@ -25,8 +25,8 @@ const getMatchesBySeason = (req,res,postgres) => {
   }
   
   const addMatch = async (req, res, postgres) => {
-    const { MatchID, Date, Time, Home, Score, Away } = req.body;
-    console.log(MatchID, Date, Time, Home, Score, Away);
+    const { MatchID, Date, Time, Home, Score, Away, tournamentID } = req.body;
+    console.log(MatchID, Date, Time, Home, Score, Away, tournamentID);
   
     const matchData = {
       matchid: Number(MatchID),
@@ -34,6 +34,7 @@ const getMatchesBySeason = (req,res,postgres) => {
       time: Time,
       score: null,
       seasonid: 1,
+      tournamentid: tournamentID,
     };
     console.log(typeof Date, typeof Time);
   
