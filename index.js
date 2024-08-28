@@ -9,7 +9,8 @@ app.use(cors({
   origin: [
     'https://main--uma-metkovic.netlify.app',
     'https://www.umametkovic.com',
-    'https://umametkovic.com'
+    'https://umametkovic.com',
+    'http://localhost:3000'
   ], 
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   optionsSuccessStatus: 204,
