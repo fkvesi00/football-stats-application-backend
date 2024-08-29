@@ -34,8 +34,7 @@ const postgres = knex({
     },
   },
 });
-// Your routes go here
-/* app.use('/api', createProxyMiddleware({ target: 'https://52.59.252.228:5001/', changeOrigin: true })); */
+
 
 const clubs = require('./controllers/clubs')
 const players = require('./controllers/players')
@@ -142,7 +141,6 @@ app.post('/pga', (req, res) => {
 })
 
 //tablica strijelaca
-
 app.post('/scorers', (req, res) => {
   const { seasonid } = req.body;
 
@@ -170,7 +168,7 @@ app.post('/scorers', (req, res) => {
     });
 });
 
-
+//ispis koji port slusa aplikaciju
 app.listen( port, ()=>{
   console.log(`Sluša na ${port}`);
 })

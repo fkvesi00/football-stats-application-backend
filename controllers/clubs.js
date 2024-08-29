@@ -3,15 +3,7 @@ const getClubsList = async (req, res, postgres) => {
     // Pronalazi sve klubove
     const data = await postgres.select('*').from('team');
     
-    // Update the logo property for each object
-    const newData = data.map(obj => {
-      return {
-        ...obj,
-        logo: '/images/klada.jpg' // Adjust the path as needed
-      };
-    });
-
-    res.json(newData);
+    res.json(data);
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -59,20 +51,21 @@ const getClubsList = async (req, res, postgres) => {
 
 
 
-  const getClubBySeason = (req,res, postgres) => {
-  const {seasonID} = req.body
+  const getClubBySeason = (req, res, postgres) => {
+    const { seasonid } = req.body;
   
-  postgres
-  .distinct('team.teamname', 'team.teamid')
-  .from('team')
-  .join('teamplayingmatch', 'team.teamid', 'teamplayingmatch.teamid')
-  .whereIn(
-    'matchid',
-    postgres('match').select('matchid').where('seasonid', seasonID)
-  )
-  .then(data => res.json(data))
-  .catch(err => console.log(err))
-}
+    postgres
+      .select('team.*')
+      .from('team')
+      .join('teamseason', 'team.teamid', 'teamseason.teamid')
+      .where('teamseason.seasonid', seasonid)
+      .then(data => res.json(data))
+      .catch(err => {
+        console.error('Error fetching teams:', err);
+        res.status(500).json({ error: 'Unable to fetch teams' });
+      });
+  };
+  
 
 
 
