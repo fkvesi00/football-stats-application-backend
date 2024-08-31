@@ -23,17 +23,21 @@ const getMatchesBySeason = (req, res, postgres) => {
     });
 };
 
-  const findMatchById = (req,res,postgres) => {
-    const {matchID} = req.body;
-  
-    postgres('teamplayingmatch')
-        .select('match.matchid', 'team.teamid', 'teamname', 'logo', 'date', 'time', 'score', 'home')
-        .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
-        .join('match', 'match.matchid', '=', 'teamplayingmatch.matchid')
-        .where('match.matchid', matchID)
-        .then(data => res.json(data))
-        .catch(err => console.log(err))
-  }
+const findMatchById = (req, res, postgres) => {
+  const { matchID } = req.body;
+
+  postgres('teamplayingmatch')
+      .select('match.matchid', 'team.teamid', 'teamname', 'date', 'time', 'score', 'home')
+      .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
+      .join('match', 'match.matchid', '=', 'teamplayingmatch.matchid')
+      .where('match.matchid', matchID)
+      .then(data => res.json(data))
+      .catch(err => {
+          console.error('Database query error:', err);
+          res.status(500).json({ error: 'Database query error' });
+      });
+};
+
   
   const addMatch = async (req, res, postgres) => {
     const { MatchID, Date, Time, Home, Score, Away, tournamentID } = req.body;
