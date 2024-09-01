@@ -9,15 +9,23 @@ const getPlayersList = (req,res,postgres) => {
       });
 }
 
-const getPlayersOfClub = (req,res,postgres) => {
-    const {teamID} = req.body
+const getPlayersOfClub = (req, res, postgres) => {
+  const { teamID, seasonid } = req.body;
+
   postgres('player')
-  .select('*')
-  .join('playerteamseason', 'player.playerid', '=', 'playerteamseason.playerid')
-  .where('playerteamseason.teamid', teamID)
-  .then(data => res.json(data))
-  .catch(err => console.log(err));
-}
+    .select('*')
+    .join('playerteamseason', 'player.playerid', '=', 'playerteamseason.playerid')
+    .where({
+      'playerteamseason.teamid': teamID,
+      'playerteamseason.seasonid': seasonid,
+    })
+    .then(data => res.json(data))
+    .catch(err => {
+      console.error('Error fetching players:', err);
+      res.status(500).json({ error: 'Failed to fetch players' });
+    });
+};
+
 
 const getPlayerAppAllSeasons = (req,res,postgres) => {
     const {playerID} = req.body

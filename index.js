@@ -112,16 +112,17 @@ app.post('/pga', (req, res) => {
 
   postgres
     .select('player.playerid', 'player.playername')
-    .countDistinct('teammatchplayer.matchid as appearances')  // Use countDistinct to count only distinct matches
-    .count('goal.goalid as goals')
+    .countDistinct('teammatchplayer.matchid as appearances') // Count distinct matches
+    .count('goal.goalid as goals') // Count total goals
     .from('playerteamseason as pts')
-    .join('teammatchplayer', function () {
-      this.on('pts.playerid', '=', 'teammatchplayer.playerid').andOn('pts.teamid', '=', 'teammatchplayer.teamid');
+    .innerJoin('teammatchplayer', function() {
+      this.on('pts.playerid', '=', 'teammatchplayer.playerid')
+          .andOn('pts.teamid', '=', 'teammatchplayer.teamid');
     })
-    .leftJoin('goal', function () {
+    .leftJoin('goal', function() {
       this.on('pts.playerid', '=', 'goal.playerid')
-        .andOn('pts.teamid', '=', 'goal.teamid')
-        .andOn('teammatchplayer.matchid', '=', 'goal.matchid');
+          .andOn('pts.teamid', '=', 'goal.teamid')
+          .andOn('teammatchplayer.matchid', '=', 'goal.matchid');
     })
     .join('player', 'pts.playerid', '=', 'player.playerid')
     .where({
@@ -132,13 +133,14 @@ app.post('/pga', (req, res) => {
     .orderBy('goals', 'desc')
     .then(results => {
       res.json(results);
-      // Process the results here
     })
     .catch(error => {
-      console.error(error);
+      console.error('Database query error:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     });
-})
+});
+
+
 
 //tablica strijelaca
 app.post('/scorers', (req, res) => {

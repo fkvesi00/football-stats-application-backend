@@ -10,19 +10,27 @@ const getClubsList = async (req, res, postgres) => {
   }
 }
 
-  const getClubGames = (req,res, postgres) => {
-    const {teamID} = req.body;
-    
-    postgres('teamplayingmatch')
-    .select('match.matchid', 'team.teamname', 'match.score', 'teamplayingmatch.home', 'match.date', 'match.time', 'team.teamid' )
+const getClubGames = (req, res, postgres) => {
+  const { teamID, seasonid } = req.body;
+
+  postgres('teamplayingmatch')
+    .select(
+      'match.matchid',
+      'team.teamname',
+      'match.score',
+      'teamplayingmatch.home',
+      'match.date',
+      'match.time',
+      'team.teamid'
+    )
     .join('match', 'teamplayingmatch.matchid', '=', 'match.matchid')
     .join('team', 'team.teamid', '=', 'teamplayingmatch.teamid')
-    .whereIn('match.matchid', function() {
-      this.select('matchid').from('teamplayingmatch').where('teamid', teamID);
-    })
+    .where('teamplayingmatch.teamid', teamID)
+    .andWhere('match.seasonid', seasonid)  // Filter by seasonid
     .then(data => res.json(data))
-    .catch(err => console.log(err));
-  }
+    .catch(err => console.error('Database query error:', err));
+};
+
 
   const addClub = (req,res, postgres) =>{
     const { clubID, teamName } = req.body;
