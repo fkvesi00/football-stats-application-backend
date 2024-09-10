@@ -17,6 +17,7 @@ const getClubGames = (req, res, postgres) => {
     .select(
       'match.matchid as MatchID',
       'match.date as Date',
+      'match.time as Time',    // Assuming match table has a `time` column
       'team1.teamid as Team1ID',
       'team1.teamname as Team1Name',
       'team2.teamid as Team2ID',
@@ -40,6 +41,7 @@ const getClubGames = (req, res, postgres) => {
         return {
           MatchID: game.MatchID,
           Date: game.Date,
+          Time: game.Time, // Added time field in the processed data
           HomeTeamID: isTeam1Home ? game.Team1ID : game.Team2ID,
           HomeTeamName: isTeam1Home ? game.Team1Name : game.Team2Name,
           AwayTeamName: isTeam1Home ? game.Team2Name : game.Team1Name,
@@ -53,6 +55,7 @@ const getClubGames = (req, res, postgres) => {
     })
     .catch(err => console.error('Database query error:', err));
 };
+
 
 
 
