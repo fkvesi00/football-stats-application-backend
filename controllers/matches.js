@@ -94,7 +94,7 @@ const findMatchById = (req, res, postgres) => {
   }
   
   const getMatchesFormatted = async (req,res, postgres) =>{
-    const seasonID= 1
+    const seasonID= 2
   
     postgres('teamplayingmatch')
     .select('match.matchid', 'team.teamname', 'match.score', 'teamplayingmatch.home', 'match.date', 'match.time', 'team.teamid')
