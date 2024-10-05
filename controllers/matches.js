@@ -48,7 +48,7 @@ const findMatchById = (req, res, postgres) => {
       date: Date,
       time: Time,
       score: null,
-      seasonid: 1,
+      seasonid: 2,
       tournamentid: tournamentID,
     };
     console.log(typeof Date, typeof Time);
