@@ -120,17 +120,18 @@ app.post('/pga', (req, res) => {
           .andOn('pts.teamid', '=', 'teammatchplayer.teamid');
     })
     .leftJoin('goal', function() {
-      this.on('pts.playerid', '=', 'goal.playerid')
-          .andOn('pts.teamid', '=', 'goal.teamid')
-          .andOn('teammatchplayer.matchid', '=', 'goal.matchid');
+      this.on('teammatchplayer.playerid', '=', 'goal.playerid')
+          .andOn('teammatchplayer.teamid', '=', 'goal.teamid')
+          .andOn('teammatchplayer.matchid', '=', 'goal.matchid'); // Ensure the match and player ID are the same
     })
     .join('player', 'pts.playerid', '=', 'player.playerid')
+    .join('match', 'teammatchplayer.matchid', '=', 'match.matchid') // Join match to filter by season
     .where({
       'pts.teamid': teamid,
-      'pts.seasonid': seasonid
+      'match.seasonid': seasonid // Filter by season using match.seasonid
     })
     .groupBy('player.playerid', 'player.playername')
-    .orderBy('goals', 'desc')
+    .orderBy('goals', 'desc') // Order by goals
     .then(results => {
       res.json(results);
     })
@@ -142,33 +143,39 @@ app.post('/pga', (req, res) => {
 
 
 
+
 //tablica strijelaca
 app.post('/scorers', (req, res) => {
   const { seasonid } = req.body;
 
   postgres
     .select('player.playerid', 'player.playername', 'team.teamname')
-    .countDistinct('teammatchplayer.matchid as appearances')
-    .countDistinct('goal.goalid as goals')
+    .countDistinct('teammatchplayer.matchid as appearances') // Count distinct appearances for the given season
+    .countDistinct('goal.goalid as goals') // Count distinct goals for the given season
     .from('goal')
-    .join('teammatchplayer', 'goal.playerid', '=', 'teammatchplayer.playerid')
+    .join('match', 'goal.matchid', '=', 'match.matchid') // Join goal to match to filter by season
+    .join('teammatchplayer', function() {
+      this.on('goal.playerid', '=', 'teammatchplayer.playerid')
+          .andOn('goal.matchid', '=', 'teammatchplayer.matchid'); // Ensure the match is the same for goal and appearance
+    })
     .join('player', 'goal.playerid', '=', 'player.playerid')
     .join('team', 'goal.teamid', '=', 'team.teamid')
-    .join('match', 'teammatchplayer.matchid', '=', 'match.matchid')
-    .where('match.seasonid', '=', seasonid)
+    .where('match.seasonid', '=', seasonid) // Filter goals and appearances by the given season
     .groupBy('player.playerid', 'player.playername', 'team.teamname')
-    .havingRaw('count(DISTINCT goal.goalid) > 0')
+    .havingRaw('count(DISTINCT goal.goalid) > 0') // Only include players with at least 1 goal
     .orderBy('goals', 'desc')
-    .limit(20)  // Add this line to limit the results to the first 20
+    .limit(20) // Limit results to 20
     .then(results => {
       res.json(results);
-      // Process the results here
     })
     .catch(error => {
       console.error(error);
       res.status(500).json({ error: 'Internal Server Error' });
     });
 });
+
+
+
 
 //ispis koji port slusa aplikaciju
 app.listen( port, ()=>{
