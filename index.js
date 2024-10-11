@@ -112,8 +112,8 @@ app.post('/pga', (req, res) => {
 
   postgres
     .select('player.playerid', 'player.playername')
-    .countDistinct('teammatchplayer.matchid as appearances') // Count distinct matches
-    .count('goal.goalid as goals') // Count total goals
+    .countDistinct('teammatchplayer.matchid as appearances') // Count distinct matches (appearances)
+    .countDistinct('goal.goalid as goals') // Count distinct goal IDs
     .from('playerteamseason as pts')
     .innerJoin('teammatchplayer', function() {
       this.on('pts.playerid', '=', 'teammatchplayer.playerid')
@@ -140,6 +140,7 @@ app.post('/pga', (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
     });
 });
+
 
 
 
