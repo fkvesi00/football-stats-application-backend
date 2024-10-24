@@ -151,19 +151,23 @@ app.post('/scorers', (req, res) => {
 
   postgres
     .select('player.playerid', 'player.playername', 'team.teamname')
-    .countDistinct('teammatchplayer.matchid as appearances') // Count distinct appearances for the given season
-    .countDistinct('goal.goalid as goals') // Count distinct goals for the given season
-    .from('goal')
-    .join('match', 'goal.matchid', '=', 'match.matchid') // Join goal to match to filter by season
-    .join('teammatchplayer', function() {
-      this.on('goal.playerid', '=', 'teammatchplayer.playerid')
-          .andOn('goal.matchid', '=', 'teammatchplayer.matchid'); // Ensure the match is the same for goal and appearance
+    // Count distinct matches for appearances
+    .countDistinct('teammatchplayer.matchid as appearances') 
+    // Count distinct goals for the given season, but prevent duplication due to multiple goals in the same match
+    .count('goal.goalid as goals') 
+    .from('player')
+    // Join teammatchplayer for appearance tracking
+    .join('teammatchplayer', 'player.playerid', '=', 'teammatchplayer.playerid')
+    // Join match to filter by season and match IDs
+    .join('match', 'teammatchplayer.matchid', '=', 'match.matchid')
+    // Left join to goal to include players who have no goals
+    .leftJoin('goal', function() {
+      this.on('player.playerid', '=', 'goal.playerid')
+          .andOn('goal.matchid', '=', 'teammatchplayer.matchid'); // Ensure goals correspond to the same match
     })
-    .join('player', 'goal.playerid', '=', 'player.playerid')
-    .join('team', 'goal.teamid', '=', 'team.teamid')
+    .join('team', 'teammatchplayer.teamid', '=', 'team.teamid')
     .where('match.seasonid', '=', seasonid) // Filter goals and appearances by the given season
     .groupBy('player.playerid', 'player.playername', 'team.teamname')
-    .havingRaw('count(DISTINCT goal.goalid) > 0') // Only include players with at least 1 goal
     .orderBy('goals', 'desc')
     .limit(20) // Limit results to 20
     .then(results => {
